@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import smartContractRegistro from "./registro.json";
 import Web3 from "web3";
 import "./App.css";
-
+//https://www.learnbestcoding.com/post/40/reactjs-form-submit
 function App() {
 
   const [Metamask, setMetamask] = useState(false);
@@ -98,9 +98,8 @@ function App() {
   }, []);
 
   const [myList, setMyList] = useState([]);
+  const [formData, setFormData] = useState({ product: '', price: '', amount: '1' });
   const [totalSum, setTotalSum] = useState(0);
-
-  const [results, setResults] = useState([]);
 
   useEffect(() => {
     const cookieValue = Cookies.get('myList');
@@ -108,21 +107,25 @@ function App() {
     setMyList(parsedList);
   }, []);
 
-  useEffect(() => {
-    const sum = myList.reduce((acc, row) => acc + row.price * row.amount, 0);
-    setTotalSum(sum);
-  }, [myList]);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    console.log(formData);
+  };
 
   const addItem = () => {
     const id = myList.length + 1;
-    const product = prompt('Enter a product:');
-    const price = prompt('Enter a price:');
-    const amount = prompt('Enter an amount:');
-    if (product && price && amount) {
-      const newRow = { id, product, price: parseFloat(price), amount: parseFloat(amount) };
+    const { product, price, amount } = formData;
+    if (product && price && amount) { // Check if all fields are filled
+      const newRow = { id, product, price, amount };
       const updatedList = [...myList, newRow];
       setMyList(updatedList);
       Cookies.set('myList', JSON.stringify(updatedList), { expires: 7 });
+      // Clear the form after adding an item
+      setFormData({ product: '', price: '', amount: '1' });
     }
   };
 
@@ -137,8 +140,43 @@ function App() {
     Cookies.remove('myList');
   };
 
+  useEffect(() => {
+    // Calculate and update the total sum whenever myList changes
+    const sum = myList.reduce((acc, row) => acc + row.price * row.amount, 0);
+    setTotalSum(sum);
+  }, [myList]);
+
   return (
     <div>
+
+      <form>
+        <label>
+          Product:
+          <input
+            type="text"
+            name="product"
+            value={formData.product}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Price:
+          <input
+            type="text"
+            name="price"
+            value={formData.price}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Amount:
+          <input type="number" name="amount" onChange={handleInputChange} />
+
+        </label>
+        <button type="button" onClick={addItem}>
+          Add
+        </button>
+      </form>
 
       <table>
         <thead>
@@ -164,21 +202,29 @@ function App() {
           ))}
         </tbody>
       </table>
-      <p>Total: ${totalSum.toFixed(2)}</p> {/* Display the total sum */}
-      <button onClick={addItem}>Add</button>
+
       <button onClick={deleteAllItems}>Clear</button>
+      <p>Total: ${totalSum.toFixed(2)}</p>
 
-        {ListarInformacion.filter((item) => item.id > 0).map((item) => (
+      {ListarInformacion.filter((item) => item.id > 0).map((item) => (
 
-          <div className="card" key={item.id}>
-            <div className="container">
-              <h4><b>{item.name}</b></h4> 
-              <p>{item.price}</p>
-              <button onClick={addItem}>Add</button>
-            </div>
+        <div className="card" key={item.id}>
+          <div className="container">
+
+            <form>
+              Nombre
+              <input size={4} type="text" name="product" value={item.name} onChange={handleInputChange} />
+              Precio
+              <input size={4} type="text" name="price" value={item.price} onChange={handleInputChange} />
+              Cantidad
+              <input size={4} type="text" name="amount" value={1} onChange={handleInputChange} />
+              <button type="button" onClick={addItem}>Add</button>
+            </form>
+
           </div>
+        </div>
 
-        ))}
+      ))}
 
     </div>
   );
