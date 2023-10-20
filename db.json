@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "fecha": "10/10/2023, 4:31:50",
+      "amount": 1,
+      "total": 195,
+      "myList": [
+        {
+          "id": 1,
+          "product": "Mango",
+          "price": "65",
+          "amount": 3
+        }
+      ],
+      "id": 11
+    }
+  ]
+}

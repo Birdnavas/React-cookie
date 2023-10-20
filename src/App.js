@@ -3,6 +3,11 @@ import Cookies from 'js-cookie';
 import smartContractRegistro from "./registro.json";
 import Web3 from "web3";
 import "./App.css";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import Read from './Read.js';
+
 
 function App() {
 
@@ -100,6 +105,7 @@ function App() {
   const [myList, setMyList] = useState([]);
   const [formData, setFormData] = useState({ product: '', price: '', amount: '1' });
   const [totalSum, setTotalSum] = useState(0);
+  const [totalProds, setTotalProds] = useState(0);
 
   useEffect(() => {
     const cookieValue = Cookies.get('myList');
@@ -144,6 +150,7 @@ function App() {
     // Calculate and update the total sum whenever myList changes
     const sum = myList.reduce((acc, row) => acc + row.price * row.amount, 0);
     setTotalSum(sum);
+    setTotalProds(myList.length);
   }, [myList]);
 
   const handleAddButtonClick = (itemId) => {
@@ -209,7 +216,7 @@ function App() {
     const updatedList = myList.map((item) => {
       if (item.id === id) {
         const newAmount = increment ? item.amount + 1 : item.amount - 1;
-      const amount = newAmount >= 1 ? newAmount : 1;
+        const amount = newAmount >= 1 ? newAmount : 1;
         return {
           ...item, amount,
           //amount: increment ? item.amount += 1 : item.amount -= 1,
@@ -221,9 +228,60 @@ function App() {
     Cookies.set('myList', JSON.stringify(updatedList), { expires: 7 });
   };
 
+  const handleSubmit2 = (event) => {
+    event.preventDefault();
+
+    axios.post('http://localhost:3030/users', {fecha: new Date().toLocaleString(), amount: totalProds, total: totalSum, myList})
+      .then(res => {
+
+      })
+  }
+
+  const [data, setData] = useState([])
+
+  useEffect(() => {
+    axios.get('http://localhost:3030/users')
+      .then(res => setData(res.data))
+      .catch(err => console.log(err))
+  }, [])
+
   return (
     <div>
 
+
+      <form onSubmit={handleSubmit2}>
+
+        <button className=''>Send</button>
+      </form>
+      <BrowserRouter>
+        <table className=''>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((d, i) => (
+              <tr key={i}>
+                <td>{d.fecha}</td>
+                <td>${d.total}</td>
+                <td>
+
+                  <Link className='' to={`/read/${d.id}`}><button>Ver</button></Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+
+        <Routes>
+          <Route path='/read/:id' element={<Read />}></Route>
+        </Routes>
+      </BrowserRouter>
+      <hr />
       <form onSubmit={registrarInformacion}>
         <table className="w-full border-collapse table-auto">
           <thead>
@@ -332,6 +390,7 @@ function App() {
 
       <button onClick={deleteAllItems}>Clear</button>
       <p>Total: ${totalSum.toFixed(2)}</p>
+      <p>Productos: {totalProds}</p>
 
       {ListarInformacion.filter((item) => item.id > 0).map((item) => (
 
